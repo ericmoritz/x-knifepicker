@@ -10,23 +10,6 @@ download_products(IndexUrl, Dir) ->
     Await = spider_index(IndexUrl, product_callback(Dir)),
     Await().
 
-%% returns a callback function that takes a Product propslist
-%% The returned function saves the product to Dir/{product_id}.json
--spec product_callback(string()) -> function().
-product_callback(Dir) ->
-    fun(Product) ->
-            Url = unicode:characters_to_list(
-                    proplists:get_value(url, Product)),
-            Key = lists:last(string:tokens(Url, "/")),
-            JsonPath = lists:flatten([
-                                      Dir,
-                                      Key,
-                                      ".json"
-                                     ]),
-            JsonPacket = mochijson2:encode({struct, Product}),
-            file:write_file(JsonPath, JsonPacket)
-    end.
-
 %% spiders an index URL, calling Callback with product data
 %% returns a function which blocks until all the product urls are processed
 -spec spider_index(string(), function()) -> function().
@@ -48,6 +31,24 @@ spider_index(IndexUrl, Callback) ->
     fun() -> accum_result(Ref, N) end.
 
 %% Internal
+
+%% returns a callback function that takes a Product propslist
+%% The returned function saves the product to Dir/{product_id}.json
+-spec product_callback(string()) -> function().
+product_callback(Dir) ->
+    fun(Product) ->
+            Url = unicode:characters_to_list(
+                    proplists:get_value(url, Product)),
+            Key = lists:last(string:tokens(Url, "/")),
+            JsonPath = lists:flatten([
+                                      Dir,
+                                      Key,
+                                      ".json"
+                                     ]),
+            JsonPacket = mochijson2:encode({struct, Product}),
+            file:write_file(JsonPath, JsonPacket)
+    end.
+
 spawn_workers(_, _, _, N, []) ->
     N;
 spawn_workers(IndexUrl, Callback, Ref, N, [ProductUrl|Rest]) ->
