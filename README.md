@@ -10,6 +10,6 @@ To run
 --------
 
     rebar get-deps compile
-    erl -pa deps/*/ebin ebin -noshell -run spider download_products [Url, Dir]
+    erl -pa deps/*/ebin ebin/ -noinput -s inets -eval 'spider:download_products(Url, Dir), init:stop().'
 
 Where Url is the the "View All" URL on a Victorinox category page and Dir is a directory to dump JSON files to.
